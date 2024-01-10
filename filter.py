@@ -9,10 +9,15 @@ def load_model(model_name):
 
     conn.close()
 
-    # Здесь вам нужно добавить код для обработки keywords и создания модели
-    # Возвращайте созданную модель
+    # Обработка ключевых слов и создание модели
+    model = {}
 
-    model = {}  # Ваша модель, замените это на свою реализацию
+    # Пример обработки ключевых слов и создания модели
+    for keyword in keywords.split(','):
+        # Ваш код обработки каждого ключевого слова
+        # и добавления его в модель
+        normalized_keyword = keyword.lower().strip()
+        model[normalized_keyword] = True
 
     return model
 
