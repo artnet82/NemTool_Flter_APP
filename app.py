@@ -57,6 +57,8 @@ def load_model(model_name):
     # Здесь вам нужно добавить код для обработки keywords и создания модели
     # Возвращайте созданную модель
 
+    model = {}  # Ваша модель, замените это на свою реализацию
+
     return model
 
 def filter_content(model, content):
