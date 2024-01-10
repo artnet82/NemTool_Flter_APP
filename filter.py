@@ -35,7 +35,7 @@ def filter_content(model, content):
     return filtered_content
 
 # Пример использования модели
-model_name = 'Model 1'
+model_name = 'Model  1'
 content = 'Some content'
 
 model = load_model(model_name)
