@@ -33,10 +33,27 @@ def train_model():
     vectorizer = TfidfVectorizer()
     X = vectorizer.fit_transform(keywords)
 
+    from sklearn.svm import SVC
+
+def train_model():
+    conn = sqlite3.connect(app.config['SQLITE_DB'])
+    c = conn.cursor()
+
+    c.execute('SELECT keywords FROM models')
+    rows = c.fetchall()
+    keywords = [row[0] for row in rows]
+
+    # Инициализация векторизатора TfidfVectorizer
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(keywords)
+
     # Обучение модели
+    y = [0, 1, 1, 0, 1]  # Пример целевых меток для обучения модели
 
-    # Здесь вы можете добавить ваш код для обучения модели на основе данных X
+    model = SVC()  # Инициализация модели Support Vector Machine
+    model.fit(X, y)  # Обучение модели на основе данных X и целевых меток y
 
+    
     conn.close()
 
 @app.route('/', methods=['GET', 'POST'])
