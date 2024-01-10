@@ -2,15 +2,18 @@ import os
 import sqlite3
 from flask import Flask, render_template, request
 from werkzeug.utils import secure_filename
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import SVC
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'keywords'
-app.config['SQLITE_DB'] = 'nemtool.db'
+app.config['UPLOAD_FOLDER'] = 'keywords'   # Папка для загруженных файлов
+app.config['SQLITE_DB'] = 'nemtool.db'     # Файл базы данных SQLite
 
 def create_database():
     conn = sqlite3.connect(app.config['SQLITE_DB'])
     c = conn.cursor()
 
+    # Создание таблицы models, если она не существует
     c.execute('''CREATE TABLE IF NOT EXISTS models
                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -19,23 +22,76 @@ def create_database():
     conn.commit()
     conn.close()
 
+def train_model():
+    conn = sqlite3.connect(app.config['SQLITE_DB'])
+    c = conn.cursor()
+
+    c.execute('SELECT keywords FROM models')
+    rows = c.fetchall()
+    keywords = [row[0] for row in rows]
+
+    # Инициализация векторизатора TfidfVectorizer
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(keywords)
+
+    # Получение целевых меток из базы данных или другого источника данных
+    c.execute('SELECT labels FROM models')
+    rows = c.fetchall()
+    labels = [row[0] for row in rows]
+
+    # Обучение модели
+    model = SVC()
+    model.fit(X, labels)
+
+    conn.close()
+
+def load_model(model_name):
+    conn = sqlite3.connect(app.config['SQLITE_DB'])
+    c = conn.cursor()
+
+    c.execute('SELECT keywords FROM models WHERE name = ?', (model_name,))
+    keywords = c.fetchone()[0]
+
+    conn.close()
+
+    # Здесь вам нужно добавить код для обработки keywords и создания модели
+    # Возвращайте созданную модель
+
+    return model
+
+def filter_content(model, content):
+    filtered_content = []
+
+    words = content.split()
+
+    for word in words:
+        if word in model:
+            filtered_content.append(word)
+
+    filtered_content = ' '.join(filtered_content)
+
+    return filtered_content
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         file = request.files['file']
         if file:
-            keywords = file.read().decode('utf-8')
+            keywords = file.read().decode('utf-8')   # Чтение содержимого файла с ключевыми словами
 
             conn = sqlite3.connect(app.config['SQLITE_DB'])
             c = conn.cursor()
 
+            # Вставка названия модели и ключевых слов в таблицу models базы данных
             c.execute('INSERT INTO models (name, keywords) VALUES (?, ?)', ('Model 1', keywords))
 
             conn.commit()
             conn.close()
 
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))   # Сохранение файла в папке keywords
+
+            train_model()   # Обучение модели на основе данных из базы данных
 
             return 'Модель успешно обучена!'
 
