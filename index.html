@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NemTool</title>
+</head>
+<body>
+    <h1>Обучение модели ИИ</h1>
+    <form action="/" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".txt">
+        <input type="submit" value="Обучить модель">
+    </form>
+
+    <h2>Обученные модели:</h2>
+    <ul>
+        {% for model in models %}
+            <li>{{ model[0] }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
